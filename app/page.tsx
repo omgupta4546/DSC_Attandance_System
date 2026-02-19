@@ -91,7 +91,9 @@
 "use client"
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-// import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { getSession } from '@/app/actions/user';
 import {
   Card,
   CardContent,
@@ -103,8 +105,21 @@ import {
 import { User, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export default function Home() {
+  const router = useRouter();
 
-  // const router = useRouter();
+  useEffect(() => {
+    const checkSession = async () => {
+      const session = await getSession();
+      if (session) {
+        if (session.role === 'admin' || session.role === 'member') {
+          router.push('/admin/scanner');
+        } else {
+          router.push(`/student-dashboard?userId=${session.userId}`);
+        }
+      }
+    };
+    checkSession();
+  }, [router]);
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex flex-col">
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">

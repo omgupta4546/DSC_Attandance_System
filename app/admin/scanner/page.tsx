@@ -83,12 +83,15 @@ export default function ScannerPage() {
   };
 
   const stopScanning = async () => {
-    if (scannerRef.current && scanning) {
+    if (scannerRef.current) {
       try {
         await scannerRef.current.stop();
         scannerRef.current.clear();
-      } catch (err) {
-        console.error("Failed to stop scanner", err);
+      } catch (err: any) {
+        // Ignore "not running" errors
+        if (typeof err === 'string' && err.includes("not running")) return;
+        if (err?.message?.includes("not running")) return;
+        console.warn("Failed to stop scanner", err);
       }
     }
     setScanning(false);
@@ -324,7 +327,7 @@ export default function ScannerPage() {
                             });
 
                             return (
-                              <TableRow key={user.id}>
+                              <TableRow key={user._id || user.id}>
                                 <TableCell>{user.name}</TableCell>
                                 <TableCell>{user.rollNumber}</TableCell>
                                 <TableCell>
@@ -390,7 +393,7 @@ export default function ScannerPage() {
                         </TableHeader>
                         <TableBody>
                           {users.map(user => (
-                            <TableRow key={user.id}>
+                            <TableRow key={user._id || user.id}>
                               <TableCell>{user.name}</TableCell>
                               <TableCell>{user.rollNumber}</TableCell>
                               <TableCell>{user.email}</TableCell>

@@ -22,7 +22,7 @@ export async function createEvent(eventName: string, eventDate: string) {
     await newEvent.save();
     console.log("Event created:", newEvent);
     return newEvent;
-    
+
   } catch (error) {
     console.error("Error creating event:", error);
 
@@ -32,8 +32,9 @@ export async function createEvent(eventName: string, eventDate: string) {
 
 export async function getEvents() {
   try {
+    await connectToDatabase();
     const events = await Event.find({}).sort({ createdAt: -1 });
-    console.log('Event Data',events)
+    console.log('Event Data', events)
     return events;
   } catch (error) {
     console.error("Error fetching events:", error);
@@ -67,14 +68,14 @@ const indiaTimeZone = "Asia/Kolkata"; // IST
 export async function markStudentAttendence(userId: string) {
   try {
     await connectToDatabase();
- 
+
 
     let user = await Students.findOne({
       qrCode: `${process.env.NEXT_PUBLIC_APP_URL || 'https://student-dashboard-sable.vercel.app'}/scan/${userId}`
     });
 
 
-    if(!user){
+    if (!user) {
       return { success: false, error: 'User not found' };
 
     }
@@ -111,7 +112,7 @@ export async function markStudentAttendence(userId: string) {
     });
 
     await user.save();
-    const html = AttendanceTemplate(user.name,user.rollNumber,user.eventName)
+    const html = AttendanceTemplate(user.name, user.rollNumber, user.eventName)
     const mailResponse = await sendMail({
       to: user.email,
       subject: 'Thanks For Attending the Event',

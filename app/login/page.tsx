@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Lock, ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast"; // Correct hook import
-import { loginUser } from '@/app/actions/user';
+import { loginUser, getSession } from '@/app/actions/user';
 import { signIn } from 'next-auth/react';
 
 const formSchema = z.object({
@@ -24,6 +24,20 @@ export default function Login() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const session = await getSession();
+      if (session) {
+        if (session.role === 'admin' || session.role === 'member') {
+          router.replace('/admin/scanner');
+        } else {
+          router.replace(`/student-dashboard?userId=${session.userId}`);
+        }
+      }
+    };
+    checkSession();
+  }, [router]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

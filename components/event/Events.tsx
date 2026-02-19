@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { createEvent, getEvents, deleteEvent as deleteEventAction,RemainerStudents } from "@/app/actions/events";
+import { createEvent, getEvents, deleteEvent as deleteEventAction, RemainerStudents } from "@/app/actions/events";
 
 interface Attendance {
   name: string;
@@ -64,12 +64,12 @@ export default function EventManager() {
       toast.error("Failed to create event");
     }
   }
-  async function handleReminderEvent(id: string){
+  async function handleReminderEvent(id: string) {
     const res = await RemainerStudents(id)
-    if(res?.success){
+    if (res?.success) {
       toast.success("Student Reminded Successfully")
       fetchEvents()
-    }else{
+    } else {
       toast.error("Failed to reminded")
     }
 
@@ -117,7 +117,10 @@ export default function EventManager() {
             {loading ? (
               <p className="text-center text-muted-foreground">Loading events...</p>
             ) : events.length === 0 ? (
-              <p className="text-center text-muted-foreground">No events found.</p>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground text-lg mb-2">No events found.</p>
+                <p className="text-sm text-gray-500">Create a new event to get started.</p>
+              </div>
             ) : (
               events.map((event) => (
                 <Card key={event._id}>
@@ -128,7 +131,7 @@ export default function EventManager() {
                       <Button variant="outline" disabled>
                         Download Attendance
                       </Button>
-                      <Button variant="destructive" className="hover hover:bg-red-700 hover:text-white" onClick={()=>handleReminderEvent(event._id)}>
+                      <Button variant="outline" className="hover:bg-primary hover:text-white" onClick={() => handleReminderEvent(event._id)}>
                         Reminder
                       </Button>
                       <Button

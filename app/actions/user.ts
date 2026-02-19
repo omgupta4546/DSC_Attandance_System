@@ -14,6 +14,23 @@ import { sendMail } from '@/lib/email';
 import { registrationTemplate } from '@/mail/studentRegistration';
 
 // 1. Register User
+export async function getSession() {
+  try {
+    const token = cookies().get('auth-token')?.value;
+    if (!token) return null;
+
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+    if (!decoded) return null;
+
+    return {
+      userId: decoded.id,
+      role: decoded.role
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
 export async function registerUser(userData: any) {
   console.log('registerUser received:', JSON.stringify(userData, null, 2));
   try {
