@@ -18,14 +18,15 @@ import { reminderEmailTemplate } from "@/mail/Remind";
 
 export async function createEvent(eventName: string, eventDate: string) {
   try {
+    await connectToDatabase();
     const newEvent = new Event({ eventName, eventDate });
     await newEvent.save();
     console.log("Event created:", newEvent);
-    return newEvent;
+    return { ok: true, event: JSON.parse(JSON.stringify(newEvent)) };
 
   } catch (error) {
     console.error("Error creating event:", error);
-
+    return { ok: false, error: 'Failed to create event' };
   }
 }
 
@@ -35,7 +36,7 @@ export async function getEvents() {
     await connectToDatabase();
     const events = await Event.find({}).sort({ createdAt: -1 });
     console.log('Event Data', events)
-    return events;
+    return JSON.parse(JSON.stringify(events));
   } catch (error) {
     console.error("Error fetching events:", error);
   }
@@ -44,15 +45,17 @@ export async function getEvents() {
 
 export async function deleteEvent(id: string) {
   try {
+    await connectToDatabase();
     const deletedEvent = await Event.findByIdAndDelete(id);
     if (!deletedEvent) {
       console.error("Event not found:", id);
-      return null;
+      return { ok: false, error: 'Event not found' };
     }
     console.log("Event deleted:", deletedEvent);
-    return deletedEvent;
+    return { ok: true, event: JSON.parse(JSON.stringify(deletedEvent)) };
   } catch (error) {
     console.error("Error deleting event:", error);
+    return { ok: false, error: 'Failed to delete event' };
   }
 }
 

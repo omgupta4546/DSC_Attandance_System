@@ -12,6 +12,7 @@ import { toZonedTime } from 'date-fns-tz';
 import { generateToken } from '@/lib/auth';
 import { sendMail } from '@/lib/email';
 import { registrationTemplate } from '@/mail/studentRegistration';
+import crypto from 'crypto';
 
 // 1. Register User
 export async function getSession() {
@@ -293,14 +294,18 @@ export async function registerStudents(studentData: any) {
     const qrCodeUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://student-dashboard-sable.vercel.app'}/scan/${userId}`;
 
     // Create User (Legacy registration implies 'user' role)
-    const hashedPassword = await bcrypt.hash('welcome123', 10); // Default password for legacy registration
+    const hashedPassword = await bcrypt.hash(studentData.password || 'welcome123', 10);
 
     const newUser = new User({
       ...studentData,
       password: hashedPassword,
       role: 'user',
       qrCode: qrCodeUrl,
-      attendance: []
+      attendance: [],
+      paymentStatus: studentData.paymentStatus || 'pending',
+      paymentScreenshot: studentData.paymentScreenshot || '',
+      razorpayOrderId: studentData.orderId,
+      razorpayPaymentId: studentData.paymentId,
     });
 
     await newUser.save();
@@ -369,6 +374,8 @@ export const getAllRecruitments = async () => {
         roundTwoAttendance: user.roundTwoAttendance,
         roundOneQualified: user.roundOneQualified,
         roundTwoQualified: user.roundTwoQualified,
+        paymentStatus: user.paymentStatus || 'pending',
+        paymentScreenshot: user.paymentScreenshot || null,
       }))
     };
   } catch (error) {
@@ -385,6 +392,7 @@ interface ReviewData {
   roundTwoAttendance?: boolean;
   roundOneQualified?: boolean;
   roundTwoQualified?: boolean;
+  paymentStatus?: 'pending' | 'paid' | 'failed';
 }
 
 export const review = async (data: ReviewData) => {
@@ -399,7 +407,7 @@ export const review = async (data: ReviewData) => {
       roundTwoAttendance: data.roundTwoAttendance,
       roundOneQualified: data.roundOneQualified,
       roundTwoQualified: data.roundTwoQualified,
-
+      paymentStatus: data.paymentStatus,
     }, { new: true });
 
     if (!student) {
@@ -412,7 +420,7 @@ export const review = async (data: ReviewData) => {
         roundTwoAttendance: data.roundTwoAttendance,
         roundOneQualified: data.roundOneQualified,
         roundTwoQualified: data.roundTwoQualified,
-
+        paymentStatus: data.paymentStatus,
       }, { new: true });
     }
 
@@ -420,7 +428,7 @@ export const review = async (data: ReviewData) => {
       return { success: false, error: "student not found" }
     }
 
-    return { success: true, students: student }
+    return { success: true, students: JSON.parse(JSON.stringify(student)) }
   } catch (error) {
     console.error("Error reviewing student:", error);
     return { success: false, error: "Failed to review student" };

@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAllRecruitments, review as reviewStudent } from "@/app/actions/user";
+import { getAllRecruitments, review as reviewStudent, logout } from "@/app/actions/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ScanLine } from "lucide-react";
+import { ArrowLeft, ScanLine, LogOut } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -55,6 +56,8 @@ interface Student {
   roundTwoAttendance?: boolean;
   roundOneQualified?: boolean;
   roundTwoQualified?: boolean;
+  paymentStatus: 'pending' | 'paid' | 'failed';
+  paymentScreenshot?: string;
 }
 
 export default function AdminReviewPage() {
@@ -63,11 +66,13 @@ export default function AdminReviewPage() {
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
 
   // filters
   const [branchFilter, setBranchFilter] = useState("");
   const [domainFilter, setDomainFilter] = useState("");
+  const [eventNameFilter, setEventNameFilter] = useState("");
 
   useEffect(() => {
     fetchStudents();
@@ -93,6 +98,7 @@ export default function AdminReviewPage() {
       roundTwoAttendance: student.roundTwoAttendance,
       roundOneQualified: student.roundOneQualified,
       roundTwoQualified: student.roundTwoQualified,
+      paymentStatus: student.paymentStatus,
     };
 
     const res = await reviewStudent(data);
@@ -109,6 +115,16 @@ export default function AdminReviewPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push("/login");
+      toast({ title: "Success", description: "Logged out successfully" });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Error", description: "Logout failed" });
+    }
+  };
+
 
   const handleInputChange = (id: string, field: string, value: any) => {
     setStudents((prev) =>
@@ -120,7 +136,8 @@ export default function AdminReviewPage() {
   const filteredStudents = students.filter((s) => {
     return (
       (branchFilter ? s.branch === branchFilter : true) &&
-      (domainFilter ? (s.domain || []).includes(domainFilter) : true)
+      (domainFilter ? (s.domain || []).includes(domainFilter) : true) &&
+      (eventNameFilter ? s.eventName === eventNameFilter : true)
     );
   });
 
@@ -129,6 +146,7 @@ export default function AdminReviewPage() {
   const uniqueDomains = Array.from(
     new Set(students.flatMap((s) => s.domain || []))
   ).filter(Boolean);
+  const uniqueEvents = Array.from(new Set(students.map((s) => s.eventName))).filter(Boolean);
 
   return (
     <div className="container mx-auto p-4">
@@ -145,6 +163,10 @@ export default function AdminReviewPage() {
             Home
           </Button>
         </Link>
+        <Button variant="ghost" size="sm" onClick={handleLogout} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
       </div>
 
       <h1 className="text-2xl font-bold mb-4">Admin: Review Students</h1>
@@ -177,11 +199,25 @@ export default function AdminReviewPage() {
           </SelectContent>
         </Select>
 
+        <Select onValueChange={setEventNameFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filter by Event" />
+          </SelectTrigger>
+          <SelectContent>
+            {uniqueEvents.map((e) => (
+              <SelectItem key={e} value={e}>
+                {e}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <Button
           variant="outline"
           onClick={() => {
             setBranchFilter("");
             setDomainFilter("");
+            setEventNameFilter("");
           }}
         >
           Reset
@@ -195,10 +231,12 @@ export default function AdminReviewPage() {
           <table className="min-w-full table-auto border border-gray-300">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-2 py-1 border bg-gray-500">Name</th>
+                <th className="px-2 py-1 border bg-gray-500 min-w-[150px]">Name</th>
+                <th className="px-2 py-1 border bg-gray-500">Action</th>
                 <th className="px-2 py-1 border bg-gray-500">Roll Number</th>
                 <th className="px-2 py-1 border bg-gray-500">Email</th>
                 <th className="px-2 py-1 border bg-gray-500">Branch</th>
+                <th className="px-2 py-1 border bg-gray-500">Payment</th>
                 <th className="px-2 py-1 border bg-gray-500">Domain</th>
                 <th className="px-2 py-1 border bg-gray-500">Review (0-10)</th>
                 <th className="px-2 py-1 border bg-gray-500">Comment</th>
@@ -206,7 +244,7 @@ export default function AdminReviewPage() {
                 <th className="px-2 py-1 border bg-gray-500">Round 2 Attendance</th>
                 <th className="px-2 py-1 border bg-gray-500">Round 1 Qualified</th>
                 <th className="px-2 py-1 border bg-gray-500">Round 2 Qualified</th>
-                <th className="px-2 py-1 border bg-gray-500">Action</th>
+                <th className="px-2 py-1 border bg-gray-500 text-xs">Payment Screenshot</th>
               </tr>
             </thead>
             <tbody>
@@ -216,6 +254,17 @@ export default function AdminReviewPage() {
                     setSelectedStudent(student);
                     setOpen(true);
                   }}>{student.name}</td>
+                  
+                  <td className="px-2 py-1 border text-center">
+                    <Button 
+                      size="sm" 
+                      className="bg-green-600 hover:bg-green-700 text-white h-8 text-xs px-3"
+                      onClick={() => handleUpdate(student)}
+                    >
+                      Save
+                    </Button>
+                  </td>
+
                   <td className="px-2 py-1 border" onClick={() => {
                     setSelectedStudent(student)
                     setOpen(true)
@@ -225,6 +274,21 @@ export default function AdminReviewPage() {
                     setOpen(true);
                   }}>{student.email}</td>
                   <td className="px-2 py-1 border">{student.branch}</td>
+                  <td className="px-2 py-1 border text-center">
+                    <Select 
+                      value={student.paymentStatus || 'pending'} 
+                      onValueChange={(val: any) => handleInputChange(student.id, "paymentStatus", val)}
+                    >
+                      <SelectTrigger className="w-[100px] h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                        <SelectItem value="failed">Failed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </td>
                   <td className="px-2 py-1 border">
                     {(student.domain || []).join(", ")}
                   </td>
@@ -294,7 +358,17 @@ export default function AdminReviewPage() {
                   </td>
 
                   <td className="px-2 py-1 border text-center">
-                    <Button onClick={() => handleUpdate(student)}>Save</Button>
+                    {student.paymentScreenshot ? (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => window.open(student.paymentScreenshot, '_blank')}
+                      >
+                        View
+                      </Button>
+                    ) : (
+                      <span className="text-gray-400 text-xs">No Proof</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -373,6 +447,20 @@ export default function AdminReviewPage() {
                     <h5 className="text-md font-semibold text-gray-300 mb-2">Aim</h5>
                     <p className="text-sm text-gray-400">{selectedStudent.aim}</p>
                   </div>
+
+                  {selectedStudent.paymentScreenshot && (
+                    <div className="pt-4 border-t border-gray-700">
+                      <h5 className="text-md font-semibold text-gray-300 mb-2">Payment Proof</h5>
+                      <div className="aspect-video relative rounded-lg overflow-hidden border border-gray-700 bg-gray-900">
+                        <img 
+                          src={selectedStudent.paymentScreenshot} 
+                          alt="Payment Screenshot" 
+                          className="object-contain w-full h-full cursor-pointer"
+                          onClick={() => window.open(selectedStudent.paymentScreenshot, '_blank')}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

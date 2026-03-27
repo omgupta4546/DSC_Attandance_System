@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getEvents } from "../actions/events";
+import Script from "next/script";
 import {
   Card,
   CardContent,
@@ -25,7 +26,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { GraduationCap, ArrowLeft } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { GraduationCap, ArrowLeft, CreditCard, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { registerStudents } from "@/app/actions/user";
 
@@ -65,6 +74,11 @@ const formSchema = z.object({
   // .max(2, { message: "You can select up to 2 domains only" }),
 
   // new end 
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  confirmPassword: z.string().min(1, { message: "Please confirm your password" }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 export default function RegisterPage() {
@@ -72,6 +86,11 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [events, setEvents] = useState<any>([]);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [pendingValues, setPendingValues] = useState<any>(null);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [screenshot, setScreenshot] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const getEventData = async () => {
@@ -94,6 +113,8 @@ export default function RegisterPage() {
       branch: "",
       year: "",
       phoneNumber: "",
+      password: "",
+      confirmPassword: "",
 
       //new gagan
       //    cgpa: "",           
@@ -109,34 +130,107 @@ export default function RegisterPage() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true);
-    try {
-      console.log("Form values:", values); // Debugging line
-      const result = await registerStudents(values);
+  // 1. Load from localStorage on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem("registrationFormData");
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        if (parsedData && typeof parsedData === 'object') {
+          Object.keys(parsedData).forEach((key) => {
+            form.setValue(key as any, parsedData[key]);
+          });
+        }
+      } catch (e) {
+        console.error("Failed to parse saved form data", e);
+      }
+    }
+  }, [form]);
 
-      if (result.success) {
-        toast({
-          title: "Registration successful",
-          description: "Your have Successfully Registered.",
-        });
+  // 2. Save to localStorage on change
+  const watchAllFields = form.watch();
+  useEffect(() => {
+    localStorage.setItem("registrationFormData", JSON.stringify(watchAllFields));
+  }, [watchAllFields]);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setPendingValues(values);
+    setShowPaymentModal(true);
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setScreenshot(e.target.files[0]);
+    }
+  };
+
+  async function handlePaymentSubmit() {
+    if (!pendingValues || !screenshot) {
+      toast({
+        variant: "destructive",
+        title: "Screenshot Required",
+        description: "Please upload the payment screenshot to proceed.",
+      });
+      return;
+    }
+
+    setPaymentProcessing(true);
+    setUploading(true);
+
+    try {
+      // 1. Upload to Cloudinary
+      const formData = new FormData();
+      formData.append("file", screenshot);
+      formData.append("upload_preset", "Om gupta"); // As per user image
+
+      const uploadRes = await fetch(
+        `https://api.cloudinary.com/v1_1/dyev0synn/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const uploadData = await uploadRes.json();
+
+      if (!uploadData.secure_url) {
+        throw new Error("Upload failed. Please try again.");
+      }
+
+      // 2. Register Student with Screenshot URL
+      const registrationData = {
+        ...pendingValues,
+        paymentStatus: "pending", // Admin will verify screenshot
+        paymentScreenshot: uploadData.secure_url,
+      };
+
+      const result = await registerStudents(registrationData);
+
+        if (result.success) {
+          localStorage.removeItem("registrationFormData"); // Clear draft on success
+          toast({
+            title: "Registration submitted",
+            description: "Your registration is pending verification. We will verify your payment screenshot soon.",
+          });
+        setShowPaymentModal(false);
         router.push(`/student-dashboard?userId=${result.userId}`);
       } else {
         toast({
           variant: "destructive",
           title: "Registration failed",
-          description:
-            result.error || "Something went wrong. Please try again.",
+          description: result.error || "Something went wrong.",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Payment Submission Error:", error);
       toast({
         variant: "destructive",
-        title: "Registration failed",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Error",
+        description: error.message || "An unexpected error occurred.",
       });
     } finally {
-      setIsSubmitting(false);
+      setPaymentProcessing(false);
+      setUploading(false);
     }
   }
 
@@ -160,7 +254,7 @@ export default function RegisterPage() {
       <main className="flex-1 container mx-auto px-4 py-8 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-xl md:text-2xl">ARTICULATE</CardTitle>
+            <CardTitle className="text-xl md:text-2xl">WEB TALK</CardTitle>
             <CardDescription className="text-xs md:text-sm">
               Register Yourself to get your QR code
             </CardDescription>
@@ -303,8 +397,8 @@ export default function RegisterPage() {
                             {/* <option value="Core Team Recruitment">
                                 Core Team Recruitment
                               </option> */}
-                            <option value="ARTICULATE">
-                              ARTICULATE
+                            <option value="WEB TALK">
+                              WEB TALK
                             </option>
 
                           </select>
@@ -480,6 +574,35 @@ export default function RegisterPage() {
                 />
  */}
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="******" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="******" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <Button
                   type="submit"
                   className="w-full"
@@ -511,6 +634,64 @@ export default function RegisterPage() {
         </Card>
 
                  </main> */}
+
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Registration Payment (₹40)</DialogTitle>
+            <DialogDescription>
+              Scan the QR code to pay ₹40 and upload the screenshot below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center p-4 space-y-4">
+            <div className="p-2 border-2 border-primary/20 rounded-lg">
+              {/* Replace PA with your actual UPI ID */}
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=omgupta@oksbi&pn=Placement%20Cell&am=40&cu=INR`} 
+                alt="UPI QR Code" 
+                className="w-48 h-48"
+              />
+            </div>
+            <div className="text-center space-y-1">
+              <p className="font-semibold text-primary">UPI ID: omgupta@oksbi</p>
+              <p className="text-xs text-muted-foreground">Please pay exactly ₹40.00</p>
+            </div>
+            
+            <div className="w-full space-y-2">
+              <label className="text-sm font-medium">Upload Payment Screenshot</label>
+              <Input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleFileUpload}
+                className="cursor-pointer"
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowPaymentModal(false)}
+              disabled={paymentProcessing}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={handlePaymentSubmit}
+              disabled={paymentProcessing || !screenshot}
+            >
+              {paymentProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {uploading ? "Uploading Screenshot..." : "Submitting..."}
+                </>
+              ) : (
+                "Submit Registration"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <footer className="border-t py-6">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground flex-col flex items-center">

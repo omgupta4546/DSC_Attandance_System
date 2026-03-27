@@ -32,6 +32,10 @@ export interface IUser extends Document {
   roundTwoAttendance?: boolean;
   roundOneQualified?: boolean;
   roundTwoQualified?: boolean;
+  paymentStatus: 'pending' | 'paid' | 'failed';
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  paymentScreenshot?: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -71,6 +75,10 @@ const UserSchema = new Schema<IUser>(
     roundTwoAttendance: { type: Boolean, default: false },
     roundOneQualified: { type: Boolean, default: false },
     roundTwoQualified: { type: Boolean, default: false },
+    paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
+    razorpayOrderId: { type: String },
+    razorpayPaymentId: { type: String },
+    paymentScreenshot: { type: String },
   },
   { timestamps: true }
 );

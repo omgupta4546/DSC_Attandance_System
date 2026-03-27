@@ -23,9 +23,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { GraduationCap, ArrowLeft, Calendar, Download } from "lucide-react";
+import { GraduationCap, ArrowLeft, Calendar, Download, LogOut } from "lucide-react";
 import { format } from "date-fns";
-import { getStudentById, getStudentByEmail } from "@/app/actions/user";
+import { getStudentById, getStudentByEmail, logout } from "@/app/actions/user";
 import { useToast } from "@/hooks/use-toast";
 
 interface User {
@@ -43,6 +43,8 @@ interface User {
     date: string;
     present: boolean;
   }[];
+  paymentStatus: 'pending' | 'paid' | 'failed';
+  paymentScreenshot?: string;
 
   // ga
   // cgpa: string;
@@ -126,6 +128,23 @@ export default function DashboardPage() {
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push("/login");
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b">
@@ -134,12 +153,10 @@ export default function DashboardPage() {
             <img src="/RTU logo.png" alt="Logo" className="h-8 w-8" />
             <h1 className="text-xl font-bold">Placement Cell</h1>
           </div>
-          <Link href="/">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
         </div>
       </header>
 
@@ -305,23 +322,47 @@ export default function DashboardPage() {
                 <CardHeader>
                   <CardTitle>Your QR Code</CardTitle>
                   <CardDescription>
-                    Scan this code to mark your attendance
+                    {user.paymentStatus === 'paid' 
+                      ? "Scan this code to mark your attendance" 
+                      : "Complete payment verification to access your QR code"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
-                  <div className="bg-white p-4 rounded-lg mb-4">
-                    <QRCodeSVG
-                      id="qr-code-svg"
-                      value={user.qrCode}
-                      size={200}
-                      level="H"
-                      includeMargin={true}
-                    />
-                  </div>
-                  <Button variant="outline" onClick={downloadQR}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Download QR Code
-                  </Button>
+                  {user.paymentStatus === 'paid' ? (
+                    <>
+                      <div className="bg-white p-4 rounded-lg mb-4">
+                        <QRCodeSVG
+                          id="qr-code-svg"
+                          value={user.qrCode}
+                          size={200}
+                          level="H"
+                          includeMargin={true}
+                        />
+                      </div>
+                      <Button variant="outline" onClick={downloadQR}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Download QR Code
+                      </Button>
+                    </>
+                  ) : user.paymentStatus === 'pending' ? (
+                    <div className="text-center py-10 space-y-4">
+                      <div className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 p-4 rounded-lg font-medium">
+                        Verification Pending ⏳
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Admin is reviewing your payment screenshot. Please check back later.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center py-10 space-y-4">
+                      <div className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 p-4 rounded-lg font-medium">
+                        Payment Rejected ❌
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Your payment verification failed. Please contact the administrator.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

@@ -14,6 +14,14 @@ import { useToast } from '@/hooks/use-toast';
 import { markAttendance, getAllUsers, logout } from '@/app/actions/user';
 import { Html5Qrcode } from 'html5-qrcode';
 import EventManager from '@/components/event/Events';
+import { getEvents } from '@/app/actions/events';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ScannerPage() {
   const router = useRouter();
@@ -27,6 +35,8 @@ export default function ScannerPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [scannerSupported, setScannerSupported] = useState(true);
+  const [events, setEvents] = useState<any[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<string>("all");
 
   // Cleanup on unmount
   useEffect(() => {
@@ -52,8 +62,9 @@ export default function ScannerPage() {
       await scanner.start(
         { facingMode: "environment" },
         {
-          fps: 10,
+          fps: 20, // Increased FPS for faster scanning
           qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0, // Force square aspect ratio
         },
         handleScan,
         (errorMessage) => {
@@ -154,6 +165,14 @@ export default function ScannerPage() {
       }
     }
     fetchUsers();
+
+    async function fetchEventsList() {
+      const res = await getEvents();
+      if (res) {
+        setEvents(res);
+      }
+    }
+    fetchEventsList();
   }, [toast]);
   // Removed the old useEffect that used Html5QrcodeScanner
 
@@ -172,12 +191,17 @@ export default function ScannerPage() {
     router.push('/login');
   };
 
+  // Filter users based on selected event
+  const filteredUsers = selectedEvent === "all"
+    ? users
+    : users.filter(user => user.eventName === selectedEvent);
+
   // Function to count attendance for today
   const getTodayAttendanceCount = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    return users.filter(user =>
+    return filteredUsers.filter(user =>
       user.attendance && user.attendance.some((a: any) => {
         const attendanceDate = new Date(a.date);
         attendanceDate.setHours(0, 0, 0, 0);
@@ -211,20 +235,37 @@ export default function ScannerPage() {
 
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
-          <Link href="/admin/scanner/review">
-            <Button variant="ghost" size="sm">
-              <ArrowRight className="h-4 w-4 mr-2" />
-              Get all registered students
-            </Button>
-          </Link>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Admin Dashboard</h2>
+            <div className="flex items-center gap-4">
+              <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select Event" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Events</SelectItem>
+                  {events.map((event) => (
+                    <SelectItem key={event._id} value={event.eventName}>
+                      {event.eventName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Link href="/admin/scanner/review">
+                <Button variant="ghost" size="sm">
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                  Review Students
+                </Button>
+              </Link>
+            </div>
+          </div>
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Total Students</CardTitle>
+                <CardTitle className="text-lg">Students ({selectedEvent === "all" ? "Total" : selectedEvent})</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{users.length}</p>
+                <p className="text-3xl font-bold">{filteredUsers.length}</p>
               </CardContent>
             </Card>
 
@@ -243,8 +284,8 @@ export default function ScannerPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold">
-                  {users.length > 0
-                    ? `${Math.round((getTodayAttendanceCount() / users.length) * 100)}%`
+                  {filteredUsers.length > 0
+                    ? `${Math.round((getTodayAttendanceCount() / filteredUsers.length) * 100)}%`
                     : '0%'}
                 </p>
               </CardContent>
@@ -260,7 +301,7 @@ export default function ScannerPage() {
               <CardContent>
                 {scanning ? (
                   <div className="flex flex-col items-center">
-                    <div id="admin-qr-reader" className="w-full h-64 overflow-hidden rounded-lg bg-black" />
+                    <div id="admin-qr-reader" className="w-full max-w-[300px] aspect-square overflow-hidden rounded-lg bg-black" />
                     <Button variant="outline" className="w-full mt-4" onClick={stopScanning}>
                       Cancel Scanning
                     </Button>
@@ -305,7 +346,7 @@ export default function ScannerPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {users
+                        {filteredUsers
                           .filter(user => {
                             const today = new Date();
                             today.setHours(0, 0, 0, 0);
@@ -336,7 +377,7 @@ export default function ScannerPage() {
                               </TableRow>
                             );
                           })}
-                        {users.filter(user => {
+                        {filteredUsers.filter(user => {
                           const today = new Date();
                           today.setHours(0, 0, 0, 0);
 
@@ -392,7 +433,7 @@ export default function ScannerPage() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {users.map(user => (
+                          {filteredUsers.map(user => (
                             <TableRow key={user._id || user.id}>
                               <TableCell>{user.name}</TableCell>
                               <TableCell>{user.rollNumber}</TableCell>
@@ -400,10 +441,10 @@ export default function ScannerPage() {
                               <TableCell>{user.attendance ? user.attendance.length : 0}</TableCell>
                             </TableRow>
                           ))}
-                          {users.length === 0 && (
+                          {filteredUsers.length === 0 && (
                             <TableRow>
                               <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
-                                No students registered yet
+                                No students found for this filter
                               </TableCell>
                             </TableRow>
                           )}

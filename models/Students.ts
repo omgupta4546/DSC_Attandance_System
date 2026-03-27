@@ -44,6 +44,8 @@ export interface IStudent extends Document {
   roundTwoAttendance?: boolean;
   roundOneQualified?: boolean;
   roundTwoQualified?: boolean;
+  paymentStatus?: 'pending' | 'paid' | 'failed';
+  paymentScreenshot?: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -134,6 +136,8 @@ const StudentSchema = new Schema<IStudent>(
     roundTwoAttendance: { type: Boolean, default: false },
     roundOneQualified: { type: Boolean, default: false },
     roundTwoQualified: { type: Boolean, default: false },
+    paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
+    paymentScreenshot: { type: String },
   },
   {
     timestamps: true,
