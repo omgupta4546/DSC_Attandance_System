@@ -8,12 +8,12 @@ export const reminderEmailTemplate = (
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 12px; background-color: #f9f9f9; text-align: center;">
         <div style="max-width: 1200px; margin: 0 auto; background: #ffffff; padding: 12px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
           <img 
-            src="https://res.cloudinary.com/dzk5x7rjz/image/upload/v1744756604/RTU_logo_me4bn1.png" 
-            alt="RTU Logo" 
+            src="https://student-dashboard-sable.vercel.app/dsc-logo.png" 
+            alt="DSC Logo" 
             style="width: 100px; margin-bottom: 15px;" 
           />
           <div style="font-size: 13px; color: #888; margin-bottom: 25px;">
-            Team Placement Cell, RTU Kota
+            Team DSC, RTU Kota
           </div>
   
           <h2 style="font-size: 22px; color: #333; margin-bottom: 10px;">

@@ -60,7 +60,7 @@ export const sendMail = async ({ to, subject, html, attachments = [] }: MailOpti
     });
 
     const mailOptions = {
-      from: `"Training & Placement Cell || RTU-KOTA" <${process.env.EMAIL_USER}>`,
+      from: `"DSC || RTU-KOTA" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html,

@@ -69,8 +69,8 @@ export default function ScanPage({ params }: { params: { userId: string } }) {
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <GraduationCap className="h-6 w-6" />
-            <h1 className="text-xl font-bold">Placement Cell</h1>
+            <img src="/dsc-logo.png" alt="Logo" className="h-8 w-8" />
+            <h1 className="text-xl font-bold">DSC</h1>
           </div>
           <Link href="/">
             <Button variant="ghost" size="sm">

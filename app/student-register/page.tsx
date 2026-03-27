@@ -239,8 +239,8 @@ export default function RegisterPage() {
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <img src="/RTU logo.png" alt="Logo" className="h-8 w-8" />
-            <h1 className="text-xl font-bold">Placement Cell</h1>
+            <img src="/dsc-logo.png" alt="Logo" className="h-8 w-8" />
+            <h1 className="text-xl font-bold">DSC</h1>
           </div>
           <Link href="/">
             <Button variant="ghost" size="sm">
@@ -254,7 +254,7 @@ export default function RegisterPage() {
       <main className="flex-1 container mx-auto px-4 py-8 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-xl md:text-2xl">WEB TALK</CardTitle>
+            <CardTitle className="text-xl md:text-2xl">{events[0]?.eventName || "Event Registration"}</CardTitle>
             <CardDescription className="text-xs md:text-sm">
               Register Yourself to get your QR code
             </CardDescription>
@@ -393,14 +393,6 @@ export default function RegisterPage() {
                             className="w-full border border-input rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-ring"
                           >
                             <option value="">Select an event</option>
-
-                            {/* <option value="Core Team Recruitment">
-                                Core Team Recruitment
-                              </option> */}
-                            <option value="WEB TALK">
-                              WEB TALK
-                            </option>
-
                           </select>
                         )}
                       </FormControl>
@@ -647,7 +639,7 @@ export default function RegisterPage() {
             <div className="p-2 border-2 border-primary/20 rounded-lg">
               {/* Replace PA with your actual UPI ID */}
               <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${process.env.NEXT_PUBLIC_UPI_ID || '7073679285@naviaxis'}&pn=Placement%20Cell&am=40&cu=INR`} 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${process.env.NEXT_PUBLIC_UPI_ID || '7073679285@naviaxis'}&pn=DSC&am=40&cu=INR`} 
                 alt="UPI QR Code" 
                 className="w-48 h-48"
               />
@@ -696,9 +688,9 @@ export default function RegisterPage() {
       <footer className="border-t py-6">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground flex-col flex items-center">
           <span>
-            © {new Date().getFullYear()} Placement Cell. All rights reserved.
+            © {new Date().getFullYear()} DSC. All rights reserved.
           </span>
-          <span className="text-sm">Developed By Placement Team</span>
+          <span className="text-sm">Developed By DSC Team</span>
         </div>
       </footer>
     </div>

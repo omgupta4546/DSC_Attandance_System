@@ -115,8 +115,8 @@ export default function DashboardPage() {
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <img src="/RTU logo.png" alt="Logo" className="h-8 w-8" />
-            <h1 className="text-xl font-bold">Placement Cell</h1>
+            <img src="/dsc-logo.png" alt="Logo" className="h-8 w-8" />
+            <h1 className="text-xl font-bold">DSC</h1>
           </div>
           <Link href="/">
             <Button variant="ghost" size="sm">
@@ -254,7 +254,7 @@ export default function DashboardPage() {
 
       <footer className="border-t py-6">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Placement Cell. All rights reserved.
+          © {new Date().getFullYear()} DSC. All rights reserved.
         </div>
       </footer>
     </div>

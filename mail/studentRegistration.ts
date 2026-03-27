@@ -59,12 +59,12 @@ export const registrationTemplate = (
       <div style="background: #ffffff; border-radius: 10px; max-width: 500px; margin: auto; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
         
         <img 
-          src="https://res.cloudinary.com/dzk5x7rjz/image/upload/v1744756604/RTU_logo_me4bn1.png" 
-          alt="RTU Logo" 
+          src="https://student-dashboard-sable.vercel.app/dsc-logo.png" 
+          alt="DSC Logo" 
           style="width: 100px; margin-bottom: 15px;" 
         />
-        <h2 style="color: #2c3e50; margin-bottom: 5px;">Registration Successfull</h2>
-        <p style="color: #7f8c8d; margin-bottom: 20px;">Team Placement Cell, RTU Kota</p>
+        <h2 style="color: #2c3e50; margin-bottom: 5px;">Registration Successful</h2>
+        <p style="color: #7f8c8d; margin-bottom: 20px;">Team DSC, RTU Kota</p>
 
         <p style="font-size: 16px; color: #2c3e50;">Hello <strong>${userName}</strong>,</p>
         <p style="font-size: 14px; color: #555;">You have successfully registered for <strong>${eventName}</strong>.</p>
@@ -102,7 +102,7 @@ export const registrationTemplate = (
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;" />
 
         <p style="font-size: 13px; color: #888;">Thank you for registering!</p>
-        <p style="font-size: 13px; font-weight: bold; color: #2c3e50;">— Team Placement Cell, RTU Kota</p>
+        <p style="font-size: 13px; font-weight: bold; color: #2c3e50;">— Team DSC, RTU Kota</p>
         <p style="font-size: 13px; font-weight: bold; color: #2c3e50;">For Any Query: 9950156755</p>
       </div>
     </div>
