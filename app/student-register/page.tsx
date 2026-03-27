@@ -181,10 +181,10 @@ export default function RegisterPage() {
       // 1. Upload to Cloudinary
       const formData = new FormData();
       formData.append("file", screenshot);
-      formData.append("upload_preset", "Om gupta"); // As per user image
+      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "Om gupta");
 
       const uploadRes = await fetch(
-        `https://api.cloudinary.com/v1_1/dyev0synn/image/upload`,
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dyev0synn'}/image/upload`,
         {
           method: "POST",
           body: formData,
