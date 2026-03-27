@@ -206,7 +206,7 @@ export default function DashboardPage() {
                 <CardContent>
                   <dl className="space-y-3 text-sm">
                     <div>
-                      <a href="https://chat.whatsapp.com/JZToUVRAWuZKIeHH1LiWfk?mode=gi_t" className="hover:underline bg-gray-200 px-3 py-2 mb-2 rounded-lg text-black font-semibold" target="_blank" rel="noopener noreferrer">
+                      <a href="https://chat.whatsapp.com/GeKmRoSGW8jAtOLP6HzhH0" className="hover:underline bg-gray-200 px-3 py-2 mb-2 rounded-lg text-black font-semibold" target="_blank" rel="noopener noreferrer">
                         Join Whatsapp Group
                       </a>
                       <dt className="font-medium text-muted-foreground mt-3">
