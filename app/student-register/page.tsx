@@ -647,13 +647,13 @@ export default function RegisterPage() {
             <div className="p-2 border-2 border-primary/20 rounded-lg">
               {/* Replace PA with your actual UPI ID */}
               <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=omgupta@oksbi&pn=Placement%20Cell&am=40&cu=INR`} 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${process.env.NEXT_PUBLIC_UPI_ID || '7073679285@naviaxis'}&pn=Placement%20Cell&am=40&cu=INR`} 
                 alt="UPI QR Code" 
                 className="w-48 h-48"
               />
             </div>
             <div className="text-center space-y-1">
-              <p className="font-semibold text-primary">UPI ID: omgupta@oksbi</p>
+              <p className="font-semibold text-primary">UPI ID: {process.env.NEXT_PUBLIC_UPI_ID || '7073679285@naviaxis'}</p>
               <p className="text-xs text-muted-foreground">Please pay exactly ₹40.00</p>
             </div>
             
