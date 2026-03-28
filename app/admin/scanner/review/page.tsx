@@ -58,6 +58,7 @@ interface Student {
   roundTwoQualified?: boolean;
   paymentStatus: 'pending' | 'paid' | 'failed';
   paymentScreenshot?: string;
+  referralCode?: string;
 }
 
 export default function AdminReviewPage() {
@@ -236,6 +237,7 @@ export default function AdminReviewPage() {
                 <th className="px-2 py-1 border bg-gray-500">Roll Number</th>
                 <th className="px-2 py-1 border bg-gray-500">Email</th>
                 <th className="px-2 py-1 border bg-gray-500">Branch</th>
+                <th className="px-2 py-1 border bg-gray-500">Referral Code</th>
                 <th className="px-2 py-1 border bg-gray-500">Payment</th>
                 <th className="px-2 py-1 border bg-gray-500">Domain</th>
                 <th className="px-2 py-1 border bg-gray-500">Review (0-10)</th>
@@ -274,6 +276,7 @@ export default function AdminReviewPage() {
                     setOpen(true);
                   }}>{student.email}</td>
                   <td className="px-2 py-1 border">{student.branch}</td>
+                  <td className="px-2 py-1 border">{student.referralCode || "-"}</td>
                   <td className="px-2 py-1 border text-center">
                     <Select 
                       value={student.paymentStatus || 'pending'} 

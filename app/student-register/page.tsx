@@ -57,6 +57,7 @@ const formSchema = z.object({
   rollNumber: z
     .string()
     .min(3, { message: "Roll number must be at least 3 characters" }),
+  referralCode: z.string().optional(),
 
   // new ga
   //     cgpa: z.string().min(1, { message: "CGPA is required" }),
@@ -115,6 +116,7 @@ export default function RegisterPage() {
       phoneNumber: "",
       password: "",
       confirmPassword: "",
+      referralCode: "",
 
       //new gagan
       //    cgpa: "",           
@@ -360,6 +362,20 @@ export default function RegisterPage() {
                       <FormLabel>Phone Number</FormLabel>
                       <FormControl>
                         <Input type="tel" placeholder="9876543210" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="referralCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Referral Code (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter referral code" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

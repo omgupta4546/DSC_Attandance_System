@@ -10,6 +10,7 @@ export interface IStudent extends Document {
   branch: string;
   year: string;
   phoneNumber: string;
+  referralCode?: string;
 
   // Developer Profile Fields
   githubProfile?: string;
@@ -95,6 +96,10 @@ const StudentSchema = new Schema<IStudent>(
     phoneNumber: {
       type: String,
       required: [true, 'Please provide phone number'],
+      trim: true,
+    },
+    referralCode: {
+      type: String,
       trim: true,
     },
 

@@ -18,6 +18,7 @@ export interface IUser extends Document {
   skills?: string[];
 
   role: 'user' | 'member' | 'admin';
+  referralCode?: string;
 
   qrCode?: string;
   attendance: {
@@ -54,6 +55,7 @@ const UserSchema = new Schema<IUser>(
     eventName: { type: String, trim: true },
 
     role: { type: String, enum: ['user', 'member', 'admin'], default: 'user' },
+    referralCode: { type: String, trim: true },
 
     // Developer Profile
     githubProfile: { type: String, trim: true },

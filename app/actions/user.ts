@@ -67,6 +67,7 @@ export async function registerUser(userData: any) {
       role: 'user', // Default role
       qrCode: qrCodeUrl,
       attendance: [],
+      referralCode: userData.referralCode,
       // Ensure other fields are mapped if needed
     });
 
@@ -302,6 +303,7 @@ export async function registerStudents(studentData: any) {
       role: 'user',
       qrCode: qrCodeUrl,
       attendance: [],
+      referralCode: studentData.referralCode,
       paymentStatus: studentData.paymentStatus || 'pending',
       paymentScreenshot: studentData.paymentScreenshot || '',
       razorpayOrderId: studentData.orderId,
@@ -376,6 +378,7 @@ export const getAllRecruitments = async () => {
         roundTwoQualified: user.roundTwoQualified,
         paymentStatus: user.paymentStatus || 'pending',
         paymentScreenshot: user.paymentScreenshot || null,
+        referralCode: user.referralCode || "",
       }))
     };
   } catch (error) {
