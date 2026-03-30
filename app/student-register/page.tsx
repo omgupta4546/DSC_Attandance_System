@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -84,6 +84,7 @@ const formSchema = z.object({
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [events, setEvents] = useState<any>([]);
@@ -92,16 +93,6 @@ export default function RegisterPage() {
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-
-  useEffect(() => {
-    const getEventData = async () => {
-      const res = await getEvents();
-      if (res) {
-        setEvents(res);
-      }
-    };
-    getEventData();
-  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -131,6 +122,31 @@ export default function RegisterPage() {
       //new  end
     },
   });
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    const email = searchParams.get("email");
+
+    if (error === "not-registered") {
+      toast({
+        variant: "destructive",
+        title: "Registration Required",
+        description: "You need to register first before you can sign in with Google.",
+      });
+      
+      if (email) {
+        form.setValue("email", email);
+      }
+    }
+
+    const getEventData = async () => {
+      const res = await getEvents();
+      if (res) {
+        setEvents(res);
+      }
+    };
+    getEventData();
+  }, [searchParams, form, toast]);
 
   // 1. Load from localStorage on mount
   useEffect(() => {

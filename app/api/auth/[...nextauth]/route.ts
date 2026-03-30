@@ -26,12 +26,17 @@ export const authOptions: AuthOptions = {
                 const existingUser = await User.findOne({ email: user.email });
                 if (existingUser) return true;
 
-                // Check legacy Students collection if you have it, else remove this block
+                // Check legacy Students collection if you have it
+                // Note: Modified this to ensure unregistered users are redirected
+                // Import Students if not already available in this scope
                 // const existingStudent = await Students.findOne({ email: user.email });
                 // if (existingStudent) return true;
 
-                // If not found, return false (deny sign in)
-                return false;
+                // If not found, redirect to register page with error and email pre-filled
+                const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3002";
+                const redirectUrl = `${baseUrl}/student-register?error=not-registered&email=${encodeURIComponent(user.email)}`;
+                console.log("DEBUG: User not found, redirecting to:", redirectUrl);
+                return redirectUrl;
             } catch (error) {
                 console.error("Error in signIn callback:", error);
                 return false;
